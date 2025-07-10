@@ -1,0 +1,209 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        160
+      ],
+      "id": "bc467380-4af5-4d69-be2e-fa61f3175d8b",
+      "name": "4o"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        180,
+        -140
+      ],
+      "id": "0030e8f9-328c-4cb2-b508-3ab0fef4eaf0",
+      "name": "When chat message received",
+      "webhookId": "51caa0e0-620f-4d1a-804d-c5420c8f30b4"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        160
+      ],
+      "id": "0d68df53-a7f4-4319-b6ff-5862c4066512",
+      "name": "Airbnb Actions",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        160
+      ],
+      "id": "61403e5b-05a0-40ee-8fd9-3a9704aef0f4",
+      "name": "Airbnb Execute",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        160
+      ],
+      "id": "1e0e4a79-fbc5-421c-bfbf-f724d80c51fc",
+      "name": "Firecrawl Actions",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        120,
+        160
+      ],
+      "id": "8e97459f-587a-43e3-a275-67a65901ad5e",
+      "name": "Firecrawl Execute",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        260,
+        160
+      ],
+      "id": "7741eb28-bca2-4062-ae65-d27e0ce8eeb3",
+      "name": "Github Actions",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        400,
+        160
+      ],
+      "id": "75506b68-ef29-45c0-9a41-999c91c83792",
+      "name": "Github Execute",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        540,
+        160
+      ],
+      "id": "c716ecab-6967-4684-af9a-4696c65596d8",
+      "name": "Airtable Actions",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        680,
+        160
+      ],
+      "id": "914a5538-1ba4-4214-a802-50d028dd721d",
+      "name": "Airtable Execute",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        820,
+        160
+      ],
+      "id": "cc007c70-5445-449d-b2d1-6a6c77aba8a4",
+      "name": "Brave Actions",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-mcp.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        960,
+        160
+      ],
+      "id": "d2b6afd4-6452-49d7-b4e4-b8fd68905505",
+      "name": "Brave Execute",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        460,
+        -140
+      ],
+      "id": "4888c9b9-6fd4-4964-8c53-a85209f495f2",
+      "name": "MCP Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "4o": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MCP Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "MCP Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8a609f5a-9f96-4384-ac21-d5b293e2a73e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0a2a26873b5414171182f510ff134eb74755491bc61788022a11941628e2313f"
+  },
+  "id": "6mQ5d90Oqy4REmsn",
+  "tags": []
+}

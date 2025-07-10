@@ -1,0 +1,192 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/compass~google-maps-extractor/runs/last/dataset/items?token=YOUR API KEY",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        40
+      ],
+      "id": "21491159-c785-4e6d-8213-627eec31515c",
+      "name": "Get Results",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/compass~google-maps-extractor/runs?token=YOUR API KEY",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"language\": \"en\",\n    \"locationQuery\": \"New York, USA\",\n    \"maxCrawledPlacesPerSearch\": 50,\n    \"searchStringsArray\": [\n        \"plumbers\"\n    ],\n    \"skipClosedPlaces\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        140,
+        40
+      ],
+      "id": "0f745476-e618-44cd-8f34-6ce38da4a010",
+      "name": "Google Maps Actor",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "# Start Actor",
+        "height": 260,
+        "width": 260,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        -40
+      ],
+      "id": "14f38871-8728-4d41-8b6a-06016329186d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Grab Results",
+        "height": 260,
+        "width": 260,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        620,
+        -40
+      ],
+      "id": "2f1569b6-8cf0-4d5e-babe-d22e621f6857",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/compass~google-maps-extractor/run-sync?token=apify_api_8tZJaGxvs9ZkkfFXV5eaqEOCDHpGln2TnJno",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"language\": \"en\",\n    \"locationQuery\": \"New York, USA\",\n    \"maxCrawledPlacesPerSearch\": 50,\n    \"searchStringsArray\": [\n        \"plumbers\"\n    ],\n    \"skipClosedPlaces\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        40
+      ],
+      "id": "5cdf54d5-3b5a-4f56-ba31-82756ec79725",
+      "name": "Sync Run",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 25
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        380,
+        40
+      ],
+      "id": "ebeb8e9f-2e3e-4529-9a1d-a0deb4688bed",
+      "name": "Wait",
+      "webhookId": "426f22d5-31db-4344-ae7a-13dedfc46bf4"
+    },
+    {
+      "parameters": {
+        "content": "# Wait\nSet this to an appropriate wait time",
+        "height": 260,
+        "width": 260,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        340,
+        -40
+      ],
+      "id": "ad6d2e47-e7a0-4d40-a140-fd2f5a67ad45",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Sync Run\n",
+        "height": 260,
+        "width": 260,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -40
+      ],
+      "id": "b52af52d-840f-4feb-9ef4-e26e9d4f8776",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Maps Actor": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Results": {
+      "main": [
+        [
+          {
+            "node": "Sync Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "75392499-03c5-4704-a68c-0fc392e892b4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0a2a26873b5414171182f510ff134eb74755491bc61788022a11941628e2313f"
+  },
+  "id": "6mQ5d90Oqy4REmsn",
+  "tags": []
+}

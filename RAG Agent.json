@@ -1,0 +1,603 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "16ahWlNwBvd53xFHA4UUh6EbkFd8ogxBv",
+          "mode": "list",
+          "cachedResultName": "Rules_of_Golf_Simplified.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/16ahWlNwBvd53xFHA4UUh6EbkFd8ogxBv/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        940,
+        960
+      ],
+      "id": "f355fbb1-5999-4dd0-81e8-524b5602bd22",
+      "name": "Download File"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Code').item.json.fullText }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "ruleNumber",
+                "value": "={{ $json.ruleNumber }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1500,
+        1100
+      ],
+      "id": "a9fe51c6-fd41-4dbe-8dae-7fb9de4ec8ea",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        960
+      ],
+      "id": "c7cf6be2-94c9-4891-9f7e-35954e6ed2b2",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Split Golf Rules\n// This code takes the input text and splits it into separate items for each rule\n\n// Get the input text from the first item\nconst inputText = $input.first().json.text;\n\n// Split the text by \"Rule\" pattern, keeping the \"Rule\" text with each section\nconst ruleSections = inputText.split(/(?=Rule \\d+)/);\n\n// Remove the first empty element (everything before the first \"Rule\")\nconst cleanedSections = ruleSections.filter(section => section.trim().startsWith('Rule'));\n\n// Create output items - one for each rule\nconst outputItems = cleanedSections.map((ruleText, index) => {\n  // Extract rule number from the text\n  const ruleMatch = ruleText.match(/Rule (\\d+)/);\n  const ruleNumber = ruleMatch ? ruleMatch[1] : (index + 1).toString();\n  \n  // Extract rule title (everything between \"Rule X –\" and the first numbered item)\n  const titleMatch = ruleText.match(/Rule \\d+ – (.+?)(?=\\n1\\.|\\n\\d+\\.)/);\n  const ruleTitle = titleMatch ? titleMatch[1].trim() : 'Unknown Rule';\n  \n  return {\n    json: {\n      ruleNumber: ruleNumber,\n      ruleTitle: ruleTitle,\n      fullText: ruleText.trim(),\n      originalIndex: index\n    }\n  };\n});\n\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        960
+      ],
+      "id": "73c1441c-cd96-491d-923a-17c784b46793",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        760,
+        100
+      ],
+      "id": "e1d37efa-8197-4035-9b5d-2255f3882083",
+      "name": "When chat message received",
+      "webhookId": "79772045-628b-4cf6-b2ec-cecceca9fe24"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        940,
+        240
+      ],
+      "id": "80f2773d-0c18-41fb-bffe-3c3ec24174ec",
+      "name": "GPT 4.1-mini"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        240
+      ],
+      "id": "f80de5c2-dfe6-4ecf-a0e2-92afc03fa572",
+      "name": "Reranker Cohere"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        960
+      ],
+      "id": "c2299381-e1b7-4615-b392-3395a80df079",
+      "name": "Upload to Supabase"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to search the database",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 20,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1400,
+        100
+      ],
+      "id": "2d889eda-48b0-4ca9-95aa-32fb4c62214a",
+      "name": "Supabase Vector Store"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        680
+      ],
+      "id": "0950cdad-ada7-48ef-89d6-5700f7ca18db",
+      "name": "GPT 4.1-mini1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        1820,
+        660
+      ],
+      "id": "7e82108e-b6df-4c81-ae27-997bd50e1f73",
+      "name": "Reranker Cohere1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1660,
+        660
+      ],
+      "id": "1d1dcd50-fb23-4b81-9071-8c3965a52226",
+      "name": "Embeddings OpenAI2"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to search the database",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 20,
+        "useReranker": true,
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "ruleNumber",
+                "value": "={{ $('Metadata Agent').item.json.output }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1660,
+        520
+      ],
+      "id": "0940e8ce-1a6e-4b02-9eac-7694e7a4178c",
+      "name": "Supabase Vector Store1"
+    },
+    {
+      "parameters": {
+        "content": "# Vectorize Document w/ Metadata\n(this code node is set up for the golf rules PDF specifically)",
+        "height": 440,
+        "width": 1000,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        820
+      ],
+      "id": "812efbfd-a352-447a-9261-8e131afe7488",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# RAG Agent\n",
+        "height": 400,
+        "width": 620,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        0
+      ],
+      "id": "c60c2358-ffc3-45ac-83fa-a09484274bd7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Vector Store w/ Reranker\n",
+        "height": 380,
+        "width": 380,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        0
+      ],
+      "id": "84aeaf6e-0792-4acf-a9f1-afa1e6441459",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1340,
+        1100
+      ],
+      "id": "c4015045-53de-4a23-af68-34bab56df50b",
+      "name": "Embeddings OpenAI1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1400,
+        240
+      ],
+      "id": "9c24aabb-7d6f-4333-862a-ad9e4ef0149a",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Overview\nYour job is to understand the rule number that the human is requesting and output only the number.\n\n## Example\nInput - what's rule number 27?\nOutput - 27"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        820,
+        520
+      ],
+      "id": "64415101-3163-443d-b3e2-d49038555eea",
+      "name": "Metadata Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent who is an expert at the rules of golf. You will receive a question from the human, and you must use your tool called \"Supabase Vector Store\" in order to retrieve information from the database to make sure you are answering the question accurately. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        960,
+        100
+      ],
+      "id": "892416a1-adc4-4ddb-aa0a-2d8978e16a0d",
+      "name": "RAG Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When chat message received').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent who is an expert at the rules of golf. You will receive a question from the human, and you must use your tool called \"Supabase Vector Store\" in order to retrieve information from the database to make sure you are answering the question accurately. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        520
+      ],
+      "id": "d706bb3e-e75e-4cf4-a4ec-0de88006b533",
+      "name": "RAG Agent 2"
+    },
+    {
+      "parameters": {
+        "content": "# RAG Agent\n",
+        "height": 400,
+        "width": 440,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        400
+      ],
+      "id": "c52d0312-d5e3-49ab-b5ee-5f2ac285b0b7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Vector Store w/ Reranker & Metadata\n",
+        "height": 400,
+        "width": 380,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        400
+      ],
+      "id": "7d5c7430-4fde-4678-99b1-e406ac7ea9e5",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "# Metadata Agent\n",
+        "height": 400,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        400
+      ],
+      "id": "12650664-867c-4c88-8d7e-87ced360d6ac",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        800,
+        960
+      ],
+      "id": "f06d3475-cfd1-4fba-a502-4f48c0ba4b4c",
+      "name": "Manual Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Upload to Supabase",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Upload to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "RAG Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 4.1-mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 4.1-mini1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RAG Agent 2",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Metadata Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere1": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "RAG Agent 2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Upload to Supabase",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Metadata Agent": {
+      "main": [
+        [
+          {
+            "node": "RAG Agent 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "93a52dbb-7fa0-4020-bc2f-7c5bf240cd20",
+  "meta": {
+    "instanceId": "0a2a26873b5414171182f510ff134eb74755491bc61788022a11941628e2313f"
+  },
+  "id": "6mQ5d90Oqy4REmsn",
+  "tags": []
+}
